@@ -1,0 +1,13 @@
+{
+  "output": "results/ablation",
+  "epochs": 40,
+  "seeds": "11,23,37,53,71",
+  "cases": "retail",
+  "methods": "NoTime,NoEdge,SingleHead,NoSelf,ClsOnly,RegOnly",
+  "shifts": "none",
+  "retail_zip": "../data_download/online_retail.zip",
+  "width": 16,
+  "heads": 2,
+  "lr_grid": ".002,.0006",
+  "skip_policy": true
+}

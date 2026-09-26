@@ -1,0 +1,13 @@
+{
+  "output": "results/correlated",
+  "epochs": 40,
+  "seeds": "11,23,37,53,71",
+  "cases": "correlated",
+  "methods": "Persistence,LocalBalance,XGBoost,LSTM,GCN,RGCN,TGRU,HomGAT,RelGRU,HetST",
+  "shifts": "none,lead,policy",
+  "retail_zip": "../data_download/online_retail.zip",
+  "width": 16,
+  "heads": 2,
+  "lr_grid": ".002,.0006",
+  "skip_policy": false
+}

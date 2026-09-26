@@ -1,0 +1,5 @@
+• A graph expert is used only when validation supports network context.
+• An intermittency screen prevents harmful graph correction in sparse demand.
+• Independent replications improve F1 in seasonal and correlated demand.
+• Correlated-demand gains persist after lead-time and inventory-policy shifts.
+• A cost guardrail abstains when emergency action lacks validation support.
