@@ -1,7 +1,7 @@
 import unittest
 import numpy as np,torch
 from hetst.simulator import synthetic,simulate,Inventory
-from hetst.data import Prepared
+from hetst.data import Prepared,fmcg_demands
 from hetst.models import Model,RelAttention
 from hetst.evaluation import events
 
@@ -44,5 +44,14 @@ class Integrity(unittest.TestCase):
   times=a.parts['train'][:5];ga=a.graph_tabular(times);gb=b.graph_tabular(times)
   np.testing.assert_array_equal(ga,gb);self.assertEqual(ga.shape[0],len(times)*a.net.n)
   self.assertGreater(ga.shape[1],a.tabular(times).shape[1])
+ def test_fmcg_adapter_is_training_only_and_deterministic(self):
+  import pandas as pd,tempfile
+  dates=pd.date_range('2022-01-01',periods=20);rows=[]
+  for i,d in enumerate(dates):
+   for j in range(12):rows.append(dict(date=d,sku=f'S{j:02d}',units_sold=(j+1)*(i+1)))
+  with tempfile.TemporaryDirectory() as td:
+   src=f'{td}/f.csv';pd.DataFrame(rows).to_csv(src,index=False);a=fmcg_demands(src,td)
+   frame=pd.read_csv(src);frame.loc[frame.date>=str(dates[12].date()),'units_sold']*=100;frame.to_csv(src,index=False);b=fmcg_demands(src,td)
+  np.testing.assert_array_equal(a[:12],b[:12]);self.assertEqual(a.shape,(20,12))
 
 if __name__=='__main__':unittest.main()

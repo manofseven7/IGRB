@@ -8,7 +8,7 @@ from scipy.special import expit
 from scipy.stats import norm
 from xgboost import XGBClassifier,XGBRegressor
 from .simulator import synthetic,simulate,Inventory
-from .data import Prepared,retail_demands
+from .data import Prepared,retail_demands,fmcg_demands
 from .models import Model
 from .evaluation import metrics,events,paired_block_bootstrap
 
@@ -112,7 +112,7 @@ def closed_loop(kind,model,d,start=None):
     return dict(cost=float(frame.cost.sum()),fill_rate=float(frame.served_current.sum()/max(frame.demand.sum(),1e-8)),backlog_unit_cycles=float(frame.backlog.sum()),emergency_units=float(frame.expedite.sum()),holding_unit_cycles=float(frame.holding.sum())),frame
 
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument('--output',default='results/main');ap.add_argument('--epochs',type=int,default=50);ap.add_argument('--seeds',default='11,23,37,53,71');ap.add_argument('--cases',default='seasonal,intermittent,correlated,retail');ap.add_argument('--methods',default='Persistence,LocalBalance,XGBoost,LSTM,GCN,RGCN,TGRU,HomGAT,RelGRU,HetST');ap.add_argument('--shifts',default='none,lead,policy');ap.add_argument('--retail-zip',default='../data_download/online_retail.zip');ap.add_argument('--width',type=int,default=16);ap.add_argument('--heads',type=int,default=2);ap.add_argument('--lr-grid',default='.002,.0006');ap.add_argument('--skip-policy',action='store_true');args=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument('--output',default='results/main');ap.add_argument('--epochs',type=int,default=50);ap.add_argument('--seeds',default='11,23,37,53,71');ap.add_argument('--cases',default='seasonal,intermittent,correlated,retail');ap.add_argument('--methods',default='Persistence,LocalBalance,XGBoost,LSTM,GCN,RGCN,TGRU,HomGAT,RelGRU,HetST');ap.add_argument('--shifts',default='none,lead,policy');ap.add_argument('--retail-zip',default='../data_download/online_retail.zip');ap.add_argument('--fmcg-csv',default='../incoming_dataset/fmcg/FMCG_2022_2024.csv');ap.add_argument('--width',type=int,default=16);ap.add_argument('--heads',type=int,default=2);ap.add_argument('--lr-grid',default='.002,.0006');ap.add_argument('--skip-policy',action='store_true');args=ap.parse_args()
     out=Path(args.output);out.mkdir(parents=True,exist_ok=True);seeds=list(map(int,args.seeds.split(',')));methods=args.methods.split(',');cases=args.cases.split(',');shifts=args.shifts.split(',')
     (out/'config.json').write_text(json.dumps(vars(args),indent=2));(out/'environment.json').write_text(json.dumps(dict(python=platform.python_version(),platform=platform.platform(),torch=torch.__version__,numpy=np.__version__,cpu_threads=torch.get_num_threads()),indent=2))
     rows=[];policies=[]
@@ -121,6 +121,10 @@ def main():
             cached=Path('data/retail_demand.npy')
             if cached.exists():demand=np.load(cached)
             else:demand=retail_demands(args.retail_zip,'data')
+        elif case=='fmcg':
+            cached=Path('data/fmcg_demand.npy')
+            if cached.exists():demand=np.load(cached)
+            else:demand=fmcg_demands(args.fmcg_csv,'data')
         else:demand=synthetic(case,101)
         sim=simulate(demand,seed=1001);d=Prepared(sim)
         variants={s:Prepared(simulate(demand,seed=1001,shift=s),reference=d) for s in shifts}

@@ -21,7 +21,9 @@ def closed_loop(model,data):
 def main():
  p=argparse.ArgumentParser();p.add_argument('--output',default='results/igrb_final');p.add_argument('--seeds',default='11,23,37,53,71');p.add_argument('--cases',default='seasonal,intermittent,correlated,retail');p.add_argument('--shifts',default='none,lead,policy');p.add_argument('--skip-policy',action='store_true');p.add_argument('--no-adi',action='store_true');p.add_argument('--error-weighting',action='store_true');a=p.parse_args();out=Path(a.output);out.mkdir(parents=True,exist_ok=True);rows=[];policies=[]
  for case in a.cases.split(','):
-  demand=np.load('data/retail_demand.npy') if case=='retail' else synthetic(case,101);base=simulate(demand,seed=1001);ref=Prepared(base);variants={s:Prepared(simulate(demand,seed=1001,shift=s),reference=ref) for s in a.shifts.split(',')}
+  if case in {'retail','fmcg'}:demand=np.load(f'data/{case}_demand.npy')
+  else:demand=synthetic(case,101)
+  base=simulate(demand,seed=1001);ref=Prepared(base);variants={s:Prepared(simulate(demand,seed=1001,shift=s),reference=ref) for s in a.shifts.split(',')}
   for seed in map(int,a.seeds.split(',')):
    run=out/case/f'IGRB_{seed}';run.mkdir(parents=True,exist_ok=True);done=run/'complete.json'
    if done.exists():saved=json.loads(done.read_text());rows+=saved['rows'];policies+=saved['policies'];continue
